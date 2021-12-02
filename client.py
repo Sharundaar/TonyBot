@@ -30,4 +30,4 @@ async def treat( ctx ):
     treat_count += 1
     await ctx.send( f"<:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> meow onm onm onm onm meow <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218>\n\t\t\t\tJ'en ai mangé {treat_count} aujourd'hui.")
 
-bot.run('OTE2MDY0Mjk2OTE4NzE2NDQ2.YaktXA.WnUFd8VJnNP6Es5eWRFMU3HTafM')
+bot.run(open('token.txt').read())

@@ -85,7 +85,7 @@ async def on_ready():
         pic_links = f.read().splitlines()
 
 
-@bot.command
+@bot.command()
 async def nerd( ctx ):
     await ctx.send( f"https://discordapp.com/channels/851934793817129010/851934794262773762/928391917287403600" )    
 

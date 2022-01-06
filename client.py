@@ -84,4 +84,9 @@ async def on_ready():
     with open('pic-links.txt') as f:
         pic_links = f.read().splitlines()
 
+
+@bot.command
+async def nerd( ctx ):
+    await ctx.send( f"https://discordapp.com/channels/851934793817129010/851934794262773762/928391917287403600" )    
+
 bot.run(open('token.txt').read())

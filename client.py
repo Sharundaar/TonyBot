@@ -1,14 +1,14 @@
 import discord
 from discord.ext import commands
 import random
-import os
+from datetime import date
 
 description = '''Tony bot commands'''
 
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix='!', description=description, intents=intents )
-treat_count = 0
 pic_links = []
+treats_per_day = {}
 
 @bot.command()
 async def meow( ctx ):
@@ -28,10 +28,15 @@ async def tonypic( ctx ):
 
 @bot.command()
 async def treat( ctx ):
-    global treat_count
-    treat_count += 1
+    global treats_per_day
+    today = date.today().strftime("%d/%m/%Y")
+    if today not in treats_per_day:
+        treats_per_day[today] = 0
+    treats_per_day[today] += 1
+    treat_count = treats_per_day[today]
     with open( 'treat-count.txt', 'w' ) as f:
-        f.write( f'{treat_count}' )
+        for k, v in treats_per_day.items():
+            f.write( f'{k} {v}\n' )
     await ctx.send( f"<:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> meow onm onm onm onm meow <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218>\n\t\t\t\tJ'en ai mangé {treat_count} aujourd'hui.")
 
 @bot.command()
@@ -65,12 +70,16 @@ async def on_disconnect():
 @bot.event
 async def on_ready():
     print("Meow! I'm awake !")
-    global treat_count
+    global treats_per_day
     with open('treat-count.txt') as f:
-        try:
-            treat_count = int( f.read() )
-        except ValueError:
-            treat_count = 0
+        lines = f.read().splitlines()
+        for l in lines:
+            splt = l.split( ' ' )
+            if len(splt) == 2:
+                try:
+                    treats_per_day[splt[0]] = int(splt[1])
+                except ValueError:
+                    treats_per_day[splt[0]] = 0
     global pic_links
     with open('pic-links.txt') as f:
         pic_links = f.read().splitlines()

@@ -89,4 +89,8 @@ async def on_ready():
 async def nerd( ctx ):
     await ctx.send( f"https://discordapp.com/channels/851934793817129010/851934794262773762/928391917287403600" )    
 
+@bot.command()
+async def bienjouer( ctx, person ):
+    await ctx.send( f"Bien jouer champion <:tonyhappy:860900538317406218> Let's gooooooo " + person )
+
 bot.run(open('token.txt').read())

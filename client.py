@@ -49,7 +49,7 @@ async def addpic( ctx, link ):
     pic_links.append( link )
     with open( 'pic-links.txt', 'w' ) as f:
         f.write( '\n'.join( pic_links ) ) 
-        await ctx.send("J'ai ajouter cette image dans ma mémoire <:tonyhappy:860900538317406218>")
+        await ctx.send("J'ai ajouté cette image dans ma mémoire <:tonyhappy:860900538317406218>")
 
 @bot.command()
 async def removepic( ctx, link ):
@@ -58,7 +58,7 @@ async def removepic( ctx, link ):
         pic_links.remove( link )
         with open( 'pic-links.txt', 'w' ) as f:
             f.write( '\n'.join( pic_links ) ) 
-        await ctx.send("J'ai enlever l'image de ma mémoire <:tonyhappy:860900538317406218>")
+        await ctx.send("J'ai enlevé l'image de ma mémoire <:tonyhappy:860900538317406218>")
     except ValueError:
         await ctx.send("Je n'ai pas cette image dans ma mémoire <:tonysad:860900605383147551>")
 
@@ -88,5 +88,9 @@ async def on_ready():
 @bot.command()
 async def nerd( ctx ):
     await ctx.send( f"https://discordapp.com/channels/851934793817129010/851934794262773762/928391917287403600" )    
+
+@bot.command()
+async def bienjouer( ctx, person ):
+    await ctx.send( f"Bien jouer champion <:tonyhappy:860900538317406218> Let's gooooooo " + person )
 
 bot.run(open('token.txt').read())

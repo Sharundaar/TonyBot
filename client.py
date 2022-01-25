@@ -5,10 +5,32 @@ from datetime import date
 
 description = '''Tony bot commands'''
 
+class Pic:
+    def __init__( self, weight, addr ):
+        self.weight = weight
+        self.addr = addr
+
 intents = discord.Intents.default()
 bot = commands.Bot(command_prefix='!', description=description, intents=intents )
 pic_links = []
 treats_per_day = {}
+
+def load_pic_links():
+    global pic_links
+    with open('pic-links.txt') as f:
+        for line in f.read().splitlines():
+            splt = line.split(' ')
+            if len( splt ) == 1:
+                pic_links.append( Pic(0, splt[0] ) )
+            else:
+                pic_links.append( Pic(int(splt[0]), splt[1] ) )
+    pic_links.sort( key=lambda x: x.weight )
+
+def save_pic_links():
+    global pic_links
+    pic_links.sort( key=lambda x: x.weight )
+    with open( 'pic-links.txt', 'w' ) as f:
+        f.write( '\n'.join( '{} {}'.format( pic.weight, pic.addr ) for pic in pic_links ) ) 
 
 @bot.command()
 async def meow( ctx ):
@@ -23,8 +45,20 @@ async def moew( ctx ):
 @bot.command()
 async def tonypic( ctx ):
     global pic_links
-    pic = random.choice(pic_links)
-    await ctx.send(pic)
+    pic_links.sort( key=lambda x: x.weight )
+    start = 0
+    end = -1
+    weight_target = pic_links[0].weight
+    for i, lk in enumerate(pic_links):
+        if lk.weight != weight_target:
+            end = i
+            break
+    if end < 0:
+        end = len( pic_links )
+    pic = random.choice(pic_links[start:end])
+    pic.weight = pic.weight + 1
+    save_pic_links()
+    await ctx.send(pic.addr)
 
 @bot.command()
 async def treat( ctx ):
@@ -46,19 +80,25 @@ async def tonysleep( ctx ):
 @bot.command()
 async def addpic( ctx, link ):
     global pic_links
-    pic_links.append( link )
-    with open( 'pic-links.txt', 'w' ) as f:
-        f.write( '\n'.join( pic_links ) ) 
-        await ctx.send("J'ai ajouté cette image dans ma mémoire <:tonyhappy:860900538317406218>")
+    pic_links.append( Pic( pic_links[0].weight, link ) )
+    save_pic_links()
+    await ctx.send("J'ai ajouté cette image dans ma mémoire <:tonyhappy:860900538317406218>")
 
 @bot.command()
 async def removepic( ctx, link ):
     global pic_links
     try:
-        pic_links.remove( link )
-        with open( 'pic-links.txt', 'w' ) as f:
-            f.write( '\n'.join( pic_links ) ) 
-        await ctx.send("J'ai enlevé l'image de ma mémoire <:tonyhappy:860900538317406218>")
+        deleted = False
+        for i, pic in enumerate( pic_links ):
+            if pic.addr == link:
+                pic_links.pop(i)
+                deleted = True
+                break
+        if deleted:
+            save_pic_links()
+            await ctx.send("J'ai enlevé l'image de ma mémoire <:tonyhappy:860900538317406218>")
+        else:
+            await ctx.send("Je n'ai pas cette image dans ma mémoire <:tonysad:860900605383147551>")
     except ValueError:
         await ctx.send("Je n'ai pas cette image dans ma mémoire <:tonysad:860900605383147551>")
 
@@ -80,9 +120,7 @@ async def on_ready():
                     treats_per_day[splt[0]] = int(splt[1])
                 except ValueError:
                     treats_per_day[splt[0]] = 0
-    global pic_links
-    with open('pic-links.txt') as f:
-        pic_links = f.read().splitlines()
+    load_pic_links()
 
 
 @bot.command()

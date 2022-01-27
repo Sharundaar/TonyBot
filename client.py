@@ -131,4 +131,9 @@ async def nerd( ctx ):
 async def bienjouer( ctx, person ):
     await ctx.send( f"Bien jouer champion <:tonyhappy:860900538317406218> Let's gooooooo " + person )
 
+@bot.command()
+async def promoL2( ctx ):
+    msg = random.choice(["Vraiment tous des idiots <:tonycoler:903753147904847883>", "Des gros trou de balles <:tonycoler:903753147904847883>"])
+    await ctx.send( msg )
+
 bot.run(open('token.txt').read())

@@ -125,7 +125,7 @@ async def on_ready():
 
 @bot.command()
 async def nerd( ctx ):
-    await ctx.send( f"https://discordapp.com/channels/851934793817129010/851934794262773762/928391917287403600" )    
+    await ctx.send( f"https://tenor.com/view/the-simpsons-homer-simpson-nerd-yelling-insult-gif-7884166" )    
 
 @bot.command()
 async def bienjouer( ctx, person ):

@@ -74,6 +74,28 @@ async def treat( ctx ):
     await ctx.send( f"<:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> meow onm onm onm onm meow <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218>\n\t\t\t\tJ'en ai mangé {treat_count} aujourd'hui.")
 
 @bot.command()
+async def vomit( ctx ):
+    global treats_per_day
+    today = date.today().strftime("%d/%m/%Y")
+    if today not in treats_per_day:
+        treats_per_day[today] = 0
+    treats_to_vomit = random.choice( range( 1, 5 ) )
+    if treats_per_day[today] == 0:
+        await ctx.send( f"Je n'ai rien a vomir aujourd'hui <:tonysad:860900605383147551> Je suis affamé <:tonysad:860900605383147551>")    
+        return
+    if treats_per_day[today] < treats_to_vomit:
+        treats_to_vomit = treats_per_day[today]
+    treats_per_day[today] -= treats_to_vomit
+    if treats_per_day[today] < 0:
+        treats_per_day[today] = 0
+    treat_count = treats_per_day[today]
+    with open( 'treat-count.txt', 'w' ) as f:
+        for k, v in treats_per_day.items():
+            f.write( f'{k} {v}\n' )
+    await ctx.send( f"🤮🤮🤮 blueaauearrrgg 🤮🤮🤮\n\t\t\tJ'ai vomis {treats_to_vomit} treats\n\t\t\tJ'en ai mangé {treat_count} aujourd'hui.")
+
+
+@bot.command()
 async def tonysleep( ctx ):
     await ctx.send( "<:zzzztony:890679784349265931><:zzzztony:890679784349265931> it is late meow, go to sleep <:zzzztony:890679784349265931><:zzzztony:890679784349265931>\n<:zzzztony:890679784349265931><:zzzztony:890679784349265931> it is late meow, go to sleep <:zzzztony:890679784349265931><:zzzztony:890679784349265931>\n<:zzzztony:890679784349265931><:zzzztony:890679784349265931> it is late meow, go to sleep <:zzzztony:890679784349265931><:zzzztony:890679784349265931>")
 

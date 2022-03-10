@@ -79,6 +79,10 @@ async def tounoirpic( ctx ):
     await ctx.send(pic.addr)
 
 @bot.command()
+async def obiwan( ctx ):
+    await ctx.send( f"<:tonyhappy:860900538317406218> le trailer d'obiwan: https://www.youtube.com/watch?v=EnlOhdFZSXw <:tonyhappy:860900538317406218>\n<:tonyhappy:860900538317406218><:tonyhappy:860900538317406218><:tonyhappy:860900538317406218><:tonyhappy:860900538317406218><:tonyhappy:860900538317406218><:tonyhappy:860900538317406218><:tonyhappy:860900538317406218>")
+
+@bot.command()
 async def treat( ctx ):
     global treats_per_day
     today = date.today().strftime("%d/%m/%Y")

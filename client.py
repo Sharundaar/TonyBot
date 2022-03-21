@@ -180,4 +180,12 @@ async def promoL2( ctx ):
     msg = random.choice(["Vraiment tous des idiots <:tonycoler:903753147904847883>", "Des gros trou de balles <:tonycoler:903753147904847883>"])
     await ctx.send( msg )
 
+@bot.command()
+async def petitponey( ctx ):
+    await ctx.send( 'https://www.youtube.com/watch?v=u5Ho1trvlro' )
+
+@bot.command()
+async def flute( ctx ):
+    await ctx.send( 'https://discord.com/channels/851934793817129010/851934794262773762/951748893614407740' )
+
 bot.run(open('token.txt').read())

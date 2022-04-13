@@ -42,8 +42,7 @@ async def moew( ctx ):
     emote = random.choice( ["<:tonyaah:860900789925183518>", "<:tonyhappy:860900538317406218>"])
     await ctx.send( emote + ' moew ' + emote )
 
-@bot.command()
-async def tonypic( ctx ):
+async def sendpic( ctx ):
     global pic_links
     pic_links.sort( key=lambda x: x.weight )
     start = 0
@@ -61,22 +60,12 @@ async def tonypic( ctx ):
     await ctx.send(pic.addr)
 
 @bot.command()
+async def tonypic( ctx ):
+    await sendpic( ctx )
+
+@bot.command()
 async def tounoirpic( ctx ):
-    global pic_links
-    pic_links.sort( key=lambda x: x.weight )
-    start = 0
-    end = -1
-    weight_target = pic_links[0].weight
-    for i, lk in enumerate(pic_links):
-        if lk.weight != weight_target:
-            end = i
-            break
-    if end < 0:
-        end = len( pic_links )
-    pic = random.choice(pic_links[start:end])
-    pic.weight = pic.weight + 1
-    save_pic_links()
-    await ctx.send(pic.addr)
+    await sendpic( ctx )
 
 @bot.command()
 async def obiwan( ctx ):

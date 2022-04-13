@@ -188,4 +188,8 @@ async def petitponey( ctx ):
 async def flute( ctx ):
     await ctx.send( 'https://discord.com/channels/851934793817129010/851934794262773762/951748893614407740' )
 
+@bot.command()
+async def jigglejiggle( ctx ):
+    await ctx.send( 'https://www.youtube.com/watch?v=oreXlaA7p7g' )
+
 bot.run(open('token.txt').read())

@@ -1,3 +1,4 @@
+from threading import Lock
 import discord
 from discord.ext import commands
 import random
@@ -5,32 +6,182 @@ from datetime import date
 
 description = '''Tony bot commands'''
 
-class Pic:
-    def __init__( self, weight, addr ):
-        self.weight = weight
+class PicLink:
+    def __init__(self, seen, addr):
+        self.seen = seen
         self.addr = addr
 
+class PicLinks:
+    def __init__( self ):
+        self.pic_links = []
+        self.lock = Lock()
+        self.load_pic_links()
+
+    def load_pic_links( self ):
+        with self.lock:
+            with open( 'pic-links.txt' ) as f:
+                for line in f.read().splitlines():
+                    splt = line.split( ' ' ) # Line is [X|O] link
+                    if len( splt ) == 1:
+                        self.pic_links.append(PicLink(False, splt[0]))
+                    elif len( splt ) > 1:
+                        self.pic_links.append(PicLink(False if splt[0] == 'X' else True, splt[1]))
+    
+    def save_pic_links( self ):
+        with self.lock:
+            with open( 'pic-links.txt', 'w' ) as f:
+                f.write( '\n'.join( '{} {}'.format( "O" if pic.seen else "X", pic.addr ) for pic in self.pic_links ) )
+
+    def add_pic( self, link ):
+        with self.lock:
+            self.pic_links.append( PicLink( False, link ) )
+        self.save_pic_links()
+
+    def get_pic( self ):
+        found_addr = None
+        with self.lock:
+            tries = 0
+            found_pic = None
+
+            # pic a random picture
+            while tries < 1000:
+                pic = random.choice( self.pic_links )
+                if not pic.seen:
+                    found_pic = pic
+                    break
+                tries = tries + 1
+
+            # Didn't find a pic
+            if not found_pic:
+                for pic in self.pic_links:
+                    pic.seen = False
+                found_pic = random.choice( self.pic_links )
+            
+            found_pic.seen = True
+            found_addr = found_pic.addr
+        self.save_pic_links()
+        return found_addr
+
+    def remove_pic( self, link ):
+        deleted = False
+        with self.lock:
+            for i, pic in enumerate( self.pic_links ):
+                if pic.addr == link:
+                    self.pic_links.pop(i)
+                    deleted = True
+                    break
+        if deleted:
+            self.save_pic_links()
+        return deleted
+
+class TreatCounter:
+    def __init__( self ):
+        self.treat_count = {}
+        self.lock = Lock()
+        self.load_treat_counts();
+    
+    def load_treat_counts( self ):
+        with self.lock:
+            with open('treat-count.txt') as f:
+                lines = f.read().splitlines()
+                for l in lines:
+                    splt = l.split( ' ' )
+                    if len(splt) == 2:
+                        try:
+                            self.treat_count[splt[0]] = int(splt[1])
+                        except ValueError:
+                            self.treat_count[splt[0]] = 0
+    
+    def save_treat_counts( self ):
+        with self.lock:
+            with open( 'treat-count.txt', 'w' ) as f:
+                for k, v in self.treat_count.items():
+                    f.write( f'{k} {v}\n' )
+
+    def treat( self ):
+        treat_count = 0
+        with self.lock:
+            today = date.today().strftime("%d/%m/%Y")
+            if today not in self.treat_count:
+                self.treat_count[today] = 0
+            self.treat_count[today] += 1
+            treat_count = self.treat_count[today]
+        self.save_treat_counts()
+        return treat_count
+
+    def vomit( self ):
+        treat_count = 0
+        treats_to_vomit = 0
+        with self.lock:
+            today = date.today().strftime("%d/%m/%Y")
+            if today not in self.treat_count:
+                self.treat_count[today] = 0
+            treats_to_vomit = random.choice( range( 1, 5 ) )
+            if self.treat_count[today] == 0:
+                return 0, 0
+            if self.treat_count[today] < treats_to_vomit:
+                treats_to_vomit = self.treat_count[today]
+            self.treat_count[today] -= treats_to_vomit
+            if self.treat_count[today] < 0:
+                self.treat_count[today] = 0
+            treat_count = self.treat_count[today]
+        self.save_treat_counts()
+        return treats_to_vomit, treat_count
+
+class CustomCommand:
+    def __init__( self, name, text ):
+        self.name = name
+        self.text = text
+
+class CustomCommands:
+    def __init__( self, bot: commands.Bot ):
+        self.commands = {}
+        self.lock = Lock()
+        self.load_commands()
+
+
+    def load_commands( self ):
+        with self.lock:
+            with open('commands.txt') as f:
+                lines = f.read().splitlines()
+                for l in lines:
+                    splt = l.split( ' ' )
+                    if len(splt) >= 2:
+                        name = splt[0]
+                        text = splt[1]
+                        command = CustomCommand( name, text )
+                        self.commands.append( command )
+    
+    def save_commands( self ):
+        with self.lock:
+            with open('commands.txt', 'w') as f:
+                for command in self.commands:
+                    f.write( f'{command.name} {command.text}\n' )
+
+    def register_command( self, bot, name, text ):
+        with self.lock:
+            command = CustomCommand( name, text )
+            self.commands.append( command )
+
+class App:
+    def __init__( self ):
+        self.pic_links = PicLinks()
+        self.treat_count = TreatCounter()
+        self.custom_commands = None
+
+
+
+
 intents = discord.Intents.default()
-bot = commands.Bot(command_prefix='!', description=description, intents=intents )
-pic_links = []
-treats_per_day = {}
+bot = commands.Bot(command_prefix='!', description=description, intents=intents,  )
+app = App()
 
-def load_pic_links():
-    global pic_links
-    with open('pic-links.txt') as f:
-        for line in f.read().splitlines():
-            splt = line.split(' ')
-            if len( splt ) == 1:
-                pic_links.append( Pic(0, splt[0] ) )
-            else:
-                pic_links.append( Pic(int(splt[0]), splt[1] ) )
-    pic_links.sort( key=lambda x: x.weight )
-
-def save_pic_links():
-    global pic_links
-    pic_links.sort( key=lambda x: x.weight )
-    with open( 'pic-links.txt', 'w' ) as f:
-        f.write( '\n'.join( '{} {}'.format( pic.weight, pic.addr ) for pic in pic_links ) ) 
+@bot.command()
+async def registercommand( ctx, name, text ):
+    global app
+    global bot
+    app.custom_commands.register_command( bot, name, text )
+    await ctx.send("Command registered")
 
 @bot.command()
 async def meow( ctx ):
@@ -43,21 +194,9 @@ async def moew( ctx ):
     await ctx.send( emote + ' moew ' + emote )
 
 async def sendpic( ctx ):
-    global pic_links
-    pic_links.sort( key=lambda x: x.weight )
-    start = 0
-    end = -1
-    weight_target = pic_links[0].weight
-    for i, lk in enumerate(pic_links):
-        if lk.weight != weight_target:
-            end = i
-            break
-    if end < 0:
-        end = len( pic_links )
-    pic = random.choice(pic_links[start:end])
-    pic.weight = pic.weight + 1
-    save_pic_links()
-    await ctx.send(pic.addr)
+    global app
+    addr = app.pic_links.get_pic()
+    await ctx.send(addr)
 
 @bot.command()
 async def tonypic( ctx ):
@@ -73,37 +212,18 @@ async def obiwan( ctx ):
 
 @bot.command()
 async def treat( ctx ):
-    global treats_per_day
-    today = date.today().strftime("%d/%m/%Y")
-    if today not in treats_per_day:
-        treats_per_day[today] = 0
-    treats_per_day[today] += 1
-    treat_count = treats_per_day[today]
-    with open( 'treat-count.txt', 'w' ) as f:
-        for k, v in treats_per_day.items():
-            f.write( f'{k} {v}\n' )
-    await ctx.send( f"<:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> meow onm onm onm onm meow <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218>\n\t\t\t\tJ'en ai mangé {treat_count} aujourd'hui.")
+    global app
+    total = app.treat_count.treat()
+    await ctx.send( f"<:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> meow onm onm onm onm meow <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218> <:tonyhappy:860900538317406218>\n\t\t\t\tJ'en ai mangé {total} aujourd'hui.")
 
 @bot.command()
 async def vomit( ctx ):
-    global treats_per_day
-    today = date.today().strftime("%d/%m/%Y")
-    if today not in treats_per_day:
-        treats_per_day[today] = 0
-    treats_to_vomit = random.choice( range( 1, 5 ) )
-    if treats_per_day[today] == 0:
+    global app
+    vomited, total = app.treat_count.vomit()
+    if vomited == 0:
         await ctx.send( f"Je n'ai rien a vomir aujourd'hui <:tonysad:860900605383147551> Je suis affamé <:tonysad:860900605383147551>")    
-        return
-    if treats_per_day[today] < treats_to_vomit:
-        treats_to_vomit = treats_per_day[today]
-    treats_per_day[today] -= treats_to_vomit
-    if treats_per_day[today] < 0:
-        treats_per_day[today] = 0
-    treat_count = treats_per_day[today]
-    with open( 'treat-count.txt', 'w' ) as f:
-        for k, v in treats_per_day.items():
-            f.write( f'{k} {v}\n' )
-    await ctx.send( f"🤮🤮🤮 blueaauearrrgg 🤮🤮🤮\n\t\t\tJ'ai vomis {treats_to_vomit} treats\n\t\t\tJ'en ai mangé {treat_count} aujourd'hui.")
+    else:
+        await ctx.send( f"🤮🤮🤮 blueaauearrrgg 🤮🤮🤮\n\t\t\tJ'ai vomis {vomited} treats\n\t\t\tJ'en ai mangé {total} aujourd'hui.")
 
 
 @bot.command()
@@ -112,27 +232,17 @@ async def tonysleep( ctx ):
 
 @bot.command()
 async def addpic( ctx, link ):
-    global pic_links
-    pic_links.append( Pic( pic_links[0].weight, link ) )
-    save_pic_links()
+    global app
+    app.pic_links.add_pic( link )
     await ctx.send("J'ai ajouté cette image dans ma mémoire <:tonyhappy:860900538317406218>")
 
 @bot.command()
 async def removepic( ctx, link ):
-    global pic_links
-    try:
-        deleted = False
-        for i, pic in enumerate( pic_links ):
-            if pic.addr == link:
-                pic_links.pop(i)
-                deleted = True
-                break
-        if deleted:
-            save_pic_links()
-            await ctx.send("J'ai enlevé l'image de ma mémoire <:tonyhappy:860900538317406218>")
-        else:
-            await ctx.send("Je n'ai pas cette image dans ma mémoire <:tonysad:860900605383147551>")
-    except ValueError:
+    global app
+    deleted = app.pic_links.remove_pic( link )
+    if deleted:
+        await ctx.send("J'ai enlevé l'image de ma mémoire <:tonyhappy:860900538317406218>")
+    else:
         await ctx.send("Je n'ai pas cette image dans ma mémoire <:tonysad:860900605383147551>")
 
 
@@ -143,17 +253,6 @@ async def on_disconnect():
 @bot.event
 async def on_ready():
     print("Meow! I'm awake !")
-    global treats_per_day
-    with open('treat-count.txt') as f:
-        lines = f.read().splitlines()
-        for l in lines:
-            splt = l.split( ' ' )
-            if len(splt) == 2:
-                try:
-                    treats_per_day[splt[0]] = int(splt[1])
-                except ValueError:
-                    treats_per_day[splt[0]] = 0
-    load_pic_links()
 
 
 @bot.command()

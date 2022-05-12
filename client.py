@@ -280,4 +280,7 @@ async def flute( ctx ):
 async def jigglejiggle( ctx ):
     await ctx.send( 'https://www.youtube.com/watch?v=oreXlaA7p7g' )
 
+@bot.command()
+async def pape( ctx ):
+    await ctx.send( "C'est à dire qu'il y a 42 millions d'ukrainien\n70% sont des chrétiens\nEt le PAPE RESTE AU VATICAN\nAu lieux d'allez à KIEV\nET DE DIRE TUEZ MOI\nJE REPRÉSENTE LE CHRIST.\nhttps://youtu.be/hDTn5UAYLJg" )
 bot.run(open('token.txt').read())

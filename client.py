@@ -188,11 +188,28 @@ async def meow( ctx ):
     emote = random.choice( ["<:tonyaah:860900789925183518>", "<:tonyhappy:860900538317406218>"])
     await ctx.send( emote + ' meow ' + emote )
 
-@bot.command()
 async def moew( ctx ):
     emote = random.choice( ["<:tonyaah:860900789925183518>", "<:tonyhappy:860900538317406218>"])
     await ctx.send( emote + ' moew ' + emote )
 
+
+@bot.command()
+async def meeoow( ctx ):
+    emote = random.choice( ["<:bobbysigh:1003306056409165874>", "<:bobbyaaah:1115906952938147870>"])
+    await ctx.send( emote + ' meow ' + emote )
+
+@bot.command()
+async def meoeow( ctx ):
+    emote = random.choice( ["<:bobbysigh:1003306056409165874>", "<:bobbyaaah:1115906952938147870>"])
+    await ctx.send( emote + ' meow ' + emote )
+
+@bot.command()
+async def mooeew( ctx ):
+    emote = random.choice( ["<:bobbysigh:1003306056409165874>", "<:bobbyaaah:1115906952938147870>"])
+    await ctx.send( emote + ' meow ' + emote )
+
+
+@bot.command()
 async def sendpic( ctx ):
     global app
     addr = app.pic_links.get_pic()

@@ -1,2 +1,2 @@
 @echo off
-bot-env\Scripts\activate.bat && py client.py
+bot-env\Scripts\activate.bat && python client.py
